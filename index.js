@@ -36,7 +36,7 @@ function runSearch() {
                 "Add Employee",
                 "View Departments",
                 "View Roles",
-                "View Employees",
+                "View All Employees",
                 "Update Employees Roles",
                 "exit"
             ]
@@ -63,8 +63,8 @@ function runSearch() {
                     viewRoles();
                     break;
 
-                case "View Employees":
-                    // viewDept();
+                case "View All Employees":
+                    viewEmployee();
                     break;
 
                 case "Update Employee Roles":
@@ -213,6 +213,24 @@ function viewRoles() {
         if (err) throw err;
        
         console.table(results);
+        runSearch();
+    })
+}
+
+// function viewEmployee() {
+//     connection.query("SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name, role.salary FROM employee, department, role WHERE employee.role_id = role.id", function (err, results) {
+//         if (err) throw err;
+       
+//         console.table(results);
+//         runSearch();
+//     })
+// }
+function viewEmployee() {
+    connection.query("SELECT employee.id, employee.first_name, employee.last_name, role.title, department.department, role.salary FROM employee, department, role WHERE employee.role_id = role.id", function (err, results) {
+        if (err) throw err;
+       
+        console.table(results);
+        console.log(results);
         runSearch();
     })
 }
