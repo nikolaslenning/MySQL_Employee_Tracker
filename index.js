@@ -34,7 +34,7 @@ function runSearch() {
                 "Add Department",
                 "Add Role",
                 "Add Employee",
-                "View Department",
+                "View Departments",
                 "View Roles",
                 "View Employees",
                 "Update Employees Roles",
@@ -55,8 +55,8 @@ function runSearch() {
                     addEmployee();
                     break;
 
-                case "View Department":
-                    // viewDept();
+                case "View Departments":
+                    viewDept();
                     break;
 
                 case "View Roles":
@@ -196,5 +196,14 @@ function addEmployee() {
                         runSearch();
                     });
             });
+    })
+}
+
+function viewDept() {
+    connection.query("SELECT * FROM department", function (err, results) {
+        if (err) throw err;
+       
+        console.table(results);
+        runSearch();
     })
 }
