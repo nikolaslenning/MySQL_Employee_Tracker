@@ -60,7 +60,7 @@ function runSearch() {
                     break;
 
                 case "View Roles":
-                    //viewRoles();
+                    viewRoles();
                     break;
 
                 case "View Employees":
@@ -201,6 +201,15 @@ function addEmployee() {
 
 function viewDept() {
     connection.query("SELECT * FROM department", function (err, results) {
+        if (err) throw err;
+       
+        console.table(results);
+        runSearch();
+    })
+}
+
+function viewRoles() {
+    connection.query("SELECT * FROM role", function (err, results) {
         if (err) throw err;
        
         console.table(results);
