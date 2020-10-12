@@ -27,24 +27,7 @@ CREATE TABLE employee(
     FOREIGN KEY (role_id) REFERENCES role(id)
 );
 
-INSERT INTO office (department) VALUES
-("Sales"),
-("Finance"),
-("Legal"),
-("Engineering");
 
-INSERT INTO role (title, salary, department_id) VALUES
-("SalesPerson", 80000, 1),
-("Accountant", 120000, 2),
-("Lawyer", 180000, 3),
-("Engineer", 150000, 4);
-
-
-INSERT INTO employee (first_name, last_name, role_id) VALUES 
-("Nik", "Lenning", 4),
-("Zac", "LaFlour", 3),
-("Seth", "Martin", 2),
-('Sydney', "Good", 1);
 
 SELECT * FROM office;
 SELECT * FROM role;

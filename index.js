@@ -68,7 +68,7 @@ function runSearch() {
                     break;
 
                 case "Update Employee Roles":
-                    // updateRoles();
+                    updateRoles();
                     break;
 
                 case "exit":
@@ -224,4 +224,8 @@ function viewEmployee() {
         console.table(results);
         runSearch();
     })
+}
+
+function updateRoles() {
+    
 }
