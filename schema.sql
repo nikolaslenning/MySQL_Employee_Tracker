@@ -3,7 +3,7 @@ CREATE DATABASE employeeDB;
 
 USE employeeDB;
 
-CREATE TABLE department(
+CREATE TABLE office(
     id INT NOT NULL AUTO_INCREMENT,
     department VARCHAR(30),
     PRIMARY KEY (id)
@@ -15,7 +15,7 @@ CREATE TABLE role(
     salary DECIMAL,
     department_id INT,
     PRIMARY KEY (id),
-    FOREIGN KEY (department_id) REFERENCES department(id)
+    FOREIGN KEY (department_id) REFERENCES office(id)
 );
 
 CREATE TABLE employee(
@@ -27,17 +27,17 @@ CREATE TABLE employee(
     FOREIGN KEY (role_id) REFERENCES role(id)
 );
 
-INSERT INTO department (department) VALUES
+INSERT INTO office (department) VALUES
 ("Sales"),
 ("Finance"),
 ("Legal"),
 ("Engineering");
 
 INSERT INTO role (title, salary, department_id) VALUES
-("SalesPerson", 80000, 4),
-("Accountant", 120000, 3),
-("Lawyer", 180000, 2),
-("Engineer", 150000, 1);
+("SalesPerson", 80000, 1),
+("Accountant", 120000, 2),
+("Lawyer", 180000, 3),
+("Engineer", 150000, 4);
 
 
 INSERT INTO employee (first_name, last_name, role_id) VALUES 
@@ -46,10 +46,10 @@ INSERT INTO employee (first_name, last_name, role_id) VALUES
 ("Seth", "Martin", 2),
 ('Sydney', "Good", 1);
 
-SELECT * FROM department;
+SELECT * FROM office;
 SELECT * FROM role;
 SELECT * FROM employee;
 
-SELECT employee.id, employee.first_name, employee.last_name, role.title, department.department, role.salary 
-FROM employee, department, role 
+SELECT employee.id, employee.first_name, employee.last_name, role.title, office.department, role.salary 
+FROM employee, office, role 
 LEFT JOIN employee ON employee.role_id = role.id

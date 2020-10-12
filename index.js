@@ -87,7 +87,7 @@ function addDept() {
         })
         .then(function (answer) {
             console.log(answer.department);
-            connection.query("INSERT INTO department set ?", { name: answer.department }, function (err) {
+            connection.query("INSERT INTO office set ?", { name: answer.department }, function (err) {
                 if (err) throw err;
                 console.log(
                     "Department Created Successfully!"
@@ -200,7 +200,7 @@ function addEmployee() {
 }
 
 function viewDept() {
-    connection.query("SELECT * FROM department", function (err, results) {
+    connection.query("SELECT * FROM office", function (err, results) {
         if (err) throw err;
        
         console.table(results);
@@ -226,7 +226,7 @@ function viewRoles() {
 //     })
 // }
 function viewEmployee() {
-    connection.query("SELECT employee.id, employee.first_name, employee.last_name, role.title, department.department, role.salary FROM employee, department, role WHERE employee.role_id = role.id", function (err, results) {
+    connection.query("SELECT employee.id, first_name, last_name, title, department, salary FROM employee JOIN role ON employee.role_id = role.id JOIN office ON office.id = role.department_id", function (err, results) {
         if (err) throw err;
        
         console.table(results);
