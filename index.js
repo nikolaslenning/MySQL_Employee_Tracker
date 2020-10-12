@@ -209,7 +209,7 @@ function viewDept() {
 }
 
 function viewRoles() {
-    connection.query("SELECT * FROM role", function (err, results) {
+    connection.query("SELECT role.id, title, salary, department FROM role JOIN office on office.id = role.department_id", function (err, results) {
         if (err) throw err;
        
         console.table(results);
@@ -217,20 +217,11 @@ function viewRoles() {
     })
 }
 
-// function viewEmployee() {
-//     connection.query("SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name, role.salary FROM employee, department, role WHERE employee.role_id = role.id", function (err, results) {
-//         if (err) throw err;
-       
-//         console.table(results);
-//         runSearch();
-//     })
-// }
 function viewEmployee() {
     connection.query("SELECT employee.id, first_name, last_name, title, department, salary FROM employee JOIN role ON employee.role_id = role.id JOIN office ON office.id = role.department_id", function (err, results) {
         if (err) throw err;
        
         console.table(results);
-        console.log(results);
         runSearch();
     })
 }
