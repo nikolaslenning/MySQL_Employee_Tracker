@@ -37,7 +37,7 @@ function runSearch() {
                 "View Departments",
                 "View Roles",
                 "View All Employees",
-                "Update Employees Roles",
+                "Update Employee Role",
                 "exit"
             ]
         })
@@ -67,7 +67,7 @@ function runSearch() {
                     viewEmployee();
                     break;
 
-                case "Update Employee Roles":
+                case "Update Employee Role":
                     updateRoles();
                     break;
 
@@ -87,7 +87,7 @@ function addDept() {
         })
         .then(function (answer) {
             console.log(answer.department);
-            connection.query("INSERT INTO office set ?", { name: answer.department }, function (err) {
+            connection.query("INSERT INTO office set ?", { department: answer.department }, function (err) {
                 if (err) throw err;
                 console.log(
                     "Department Created Successfully!"
@@ -98,61 +98,130 @@ function addDept() {
 }
 
 function addRole() {
-    inquirer
-        .prompt([{
-            name: "role",
-            type: "input",
-            message: "What role would you like to add?"
-        },
-        {
-            name: "salary",
-            type: "input",
-            message: "What is the salary for this role?",
-            validate: function (value) {
-                if (isNaN(value) === false) {
-                    return true;
+    connection.query("SELECT * FROM office", function (err, results) {
+        if (err) throw err;
+        inquirer
+            .prompt([{
+                name: "role",
+                type: "input",
+                message: "What role would you like to add?"
+            },
+            {
+                name: "salary",
+                type: "input",
+                message: "What is the salary for this role?",
+                validate: function (value) {
+                    if (isNaN(value) === false) {
+                        return true;
+                    }
+                    return false;
                 }
-                return false;
-            }
-        }])
-        .then(function (answer) {
-            console.log(answer.role);
-            connection.query("SELECT * FROM role", function (error, response) {
-                if (error) {
-                    console.log("error");
-                    console.log(error);
-                } else {
-                    var shouldCreate = true;
-                    for (var i = 0; i < response.length; i++) {
-                        var currentRole = response[i];
-                        if (answer.role === currentRole.title) {
-                            console.log("Role already exists")
-                            shouldCreate = false;
-                            runSearch();
-                            break;
+            },
+            {
+                name: "departmentID",
+                type: "rawlist",
+                message: "What department does this role fall under?",
+                choices: function () {
+                    var deptArray = [];
+                    results.forEach((entry) => {
+                        let name = entry.department;
+                        let value = entry.id;
+                        deptArray.push({ name, value });
+                    })
+                    console.log(deptArray);
+                     return deptArray;
+                }
+
+            }])
+            .then(function (answer) {
+                console.log(answer.departmentID);
+                connection.query("SELECT * FROM role", function (error, response) {
+                    if (error) {
+                        console.log("error");
+                        console.log(error);
+                    } else {
+                        var shouldCreate = true;
+                        for (var i = 0; i < response.length; i++) {
+                            var currentRole = response[i];
+                            if (answer.role === currentRole.title) {
+                                console.log(`${answer.role} already exists`)
+                                shouldCreate = false;
+                                runSearch();
+                                break;
+                            }
+                        }
+                        if (shouldCreate) {
+                            connection.query("INSERT INTO role set ? ",
+                                {
+                                    title: answer.role,
+                                    salary: answer.salary,
+                                    department_id: answer.departmentID  
+                                },
+                                function (err) {
+                                    if (err) throw err;
+                                    console.log(
+                                        `${answer.role} Created Successfully!`
+                                    );
+                                    runSearch();
+                                });
                         }
                     }
-                    if (shouldCreate) {
-                        connection.query("INSERT INTO role set ?",
-                            {
-                                title: answer.role,
-                                salary: answer.salary
-                            },
-                            function (err) {
-                                if (err) throw err;
-                                console.log(
-                                    "Role Created Successfully!"
-                                );
-                                runSearch();
-                            });
+                })
+            });
+    });
+}
+function updateRoles() {
+    connection.query("SELECT first_name, last_name, title FROM employee JOIN role ON employee.role_id = role.id", function (err, results) {
+        if (err) throw err;
+        console.log("results");
+        console.table(results);
+        console.log(results[0].title);
+        inquirer
+            .prompt([
+                {
+                    name: "updateRole",
+                    type: "rawlist",
+                    message: "Which employee's role would you like to update?",
+                    choices: function () {
+                        var choiceArray = [];
+                        for (var i = 0; i < results.length; i++) {
+                            var fullName = ""
+                            fullName = (results[i].first_name + " " + results[i].last_name)
+                            choiceArray.push(fullName);
+                        }
+                        //console.log(choiceArray)
+                        return choiceArray;
+                    }
+                }
+            ])
+            .then(function (answer) {
+                console.log("answer");
+                console.log(answer);
+                console.log(answer.updateRole);
+                console.log(results[1].title);
+
+                for (var i = 0; i < results.length; i++) {
+                    if (answer.updateRole === (results[i].first_name + " " + results[i].last_name)) {
+                        console.log('hithithtithith')
+                        // connection.query(
+                        //     "UPDATE employee SET ? WHERE ?",
+                        //     [
+                        //         {
+                        //            title:
+                        //         },
+                        //         {
+                        //             id: answer.id
+                        //         }
+                        //     ],
+                        // )
                     }
                 }
             })
-        });
-}
+    })
+};
 
 function addEmployee() {
-    connection.query("SELECT * FROM role", function (err, results) {
+    connection.query("SELECT role.title FROM role", function (err, results) {
         if (err) throw err;
         inquirer
             .prompt([
@@ -176,23 +245,45 @@ function addEmployee() {
                         for (var i = 0; i < results.length; i++) {
                             choiceArray.push(results[i].title);
                         }
+                        console.log(choiceArray);
                         return choiceArray;
                     }
                 }
             ])
             .then(function (answer) {
+                switch (answer.empRole) {     //how to dyncamically add roleID???
+                    case 'SalesPerson':
+                        var roleID = 1;
+                        break;
+
+                    case 'Accountant':
+                        var roleID = 2;
+                        break;
+
+                    case 'Janitor':
+                        var roleID = 3;
+                        break;
+
+                    case 'Engineer':
+                        var roleID = 4;
+                        break;
+                }
+                console.log(answer)
                 console.log(answer.firstName);
                 console.log(answer.lastName);
                 connection.query("INSERT INTO employee set ?",
                     {
                         first_name: answer.firstName,
-                        last_name: answer.lastName
+                        last_name: answer.lastName,
+                        role_id: roleID      //how to dyncamically add roleID???
+
                     },
                     function (err) {
                         if (err) throw err;
                         console.log(
-                            "Role Created Successfully!"
+                            "Employee Created Successfully!"
                         );
+
                         runSearch();
                     });
             });
@@ -202,30 +293,26 @@ function addEmployee() {
 function viewDept() {
     connection.query("SELECT * FROM office", function (err, results) {
         if (err) throw err;
-       
+
         console.table(results);
         runSearch();
     })
 }
 
 function viewRoles() {
-    connection.query("SELECT role.id, title, salary, department FROM role JOIN office on office.id = role.department_id", function (err, results) {
+    connection.query("SELECT role.id, title, salary, department FROM role JOIN office on office.id = role.department_id ORDER BY role.id", function (err, results) {
         if (err) throw err;
-       
+
         console.table(results);
         runSearch();
     })
 }
 
 function viewEmployee() {
-    connection.query("SELECT employee.id, first_name, last_name, title, department, salary FROM employee JOIN role ON employee.role_id = role.id JOIN office ON office.id = role.department_id", function (err, results) {
+    connection.query("SELECT employee.id, first_name, last_name, title, department, salary FROM employee JOIN role ON employee.role_id = role.id JOIN office ON office.id = role.department_id ORDER BY employee.id", function (err, results) {
         if (err) throw err;
-       
+
         console.table(results);
         runSearch();
     })
-}
-
-function updateRoles() {
-    
 }
