@@ -129,7 +129,7 @@ function addRole() {
                         deptArray.push({ name, value });
                     })
                     console.log(deptArray);
-                     return deptArray;
+                    return deptArray;
                 }
 
             }])
@@ -155,7 +155,7 @@ function addRole() {
                                 {
                                     title: answer.role,
                                     salary: answer.salary,
-                                    department_id: answer.departmentID  
+                                    department_id: answer.departmentID
                                 },
                                 function (err) {
                                     if (err) throw err;
@@ -221,7 +221,7 @@ function updateRoles() {
 };
 
 function addEmployee() {
-    connection.query("SELECT role.title FROM role", function (err, results) {
+    connection.query("SELECT * FROM role", function (err, results) {
         if (err) throw err;
         inquirer
             .prompt([
@@ -242,32 +242,20 @@ function addEmployee() {
                     message: "What is the employee's role?",
                     choices: function () {
                         var choiceArray = [];
-                        for (var i = 0; i < results.length; i++) {
-                            choiceArray.push(results[i].title);
-                        }
+                        results.forEach((entry) => {
+                            let name = entry.title;
+                            let value = entry.id;
+                            console.log(name)
+                            choiceArray.push({ name, value });
+                        })
+
                         console.log(choiceArray);
                         return choiceArray;
                     }
                 }
             ])
             .then(function (answer) {
-                switch (answer.empRole) {     //how to dyncamically add roleID???
-                    case 'SalesPerson':
-                        var roleID = 1;
-                        break;
 
-                    case 'Accountant':
-                        var roleID = 2;
-                        break;
-
-                    case 'Janitor':
-                        var roleID = 3;
-                        break;
-
-                    case 'Engineer':
-                        var roleID = 4;
-                        break;
-                }
                 console.log(answer)
                 console.log(answer.firstName);
                 console.log(answer.lastName);
@@ -275,15 +263,13 @@ function addEmployee() {
                     {
                         first_name: answer.firstName,
                         last_name: answer.lastName,
-                        role_id: roleID      //how to dyncamically add roleID???
-
+                        role_id: answer.empRole
                     },
                     function (err) {
                         if (err) throw err;
                         console.log(
                             "Employee Created Successfully!"
                         );
-
                         runSearch();
                     });
             });
