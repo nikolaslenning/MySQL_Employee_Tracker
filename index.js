@@ -171,11 +171,10 @@ function addRole() {
     });
 }
 function updateRoles() {
-    connection.query("SELECT first_name, last_name, title FROM employee JOIN role ON employee.role_id = role.id", function (err, results) {
+    connection.query("SELECT first_name, last_name, employee.id, title FROM employee JOIN role ON employee.role_id = role.id", function (err, results) {
         if (err) throw err;
-        console.log("results");
-        console.table(results);
-        console.log(results[0].title);
+        // console.log("results");
+        // console.table(results);        
         inquirer
             .prompt([
                 {
@@ -184,41 +183,76 @@ function updateRoles() {
                     message: "Which employee's role would you like to update?",
                     choices: function () {
                         var choiceArray = [];
-                        for (var i = 0; i < results.length; i++) {
-                            var fullName = ""
-                            fullName = (results[i].first_name + " " + results[i].last_name)
-                            choiceArray.push(fullName);
-                        }
-                        //console.log(choiceArray)
+                        results.forEach((entry) => {
+                            let name = (entry.first_name + " " + entry.last_name);
+                            let value = entry.id;
+                            choiceArray.push({ name, value });
+                        })
+                        // console.log("choiceArray for updateRole")
+                        // console.log(choiceArray)
                         return choiceArray;
                     }
                 }
             ])
-            .then(function (answer) {
-                console.log("answer");
-                console.log(answer);
-                console.log(answer.updateRole);
-                console.log(results[1].title);
+            .then(function (empAnswer) {
+                connection.query("SELECT * FROM role", function (err, results) {
+                    if (err) throw err;
+                    // console.log("empAnswer")
+                    // console.log(empAnswer)
+                    // console.log(empAnswer.updateRole)
+                    // console.log("results")
+                    // console.log(results)
 
-                for (var i = 0; i < results.length; i++) {
-                    if (answer.updateRole === (results[i].first_name + " " + results[i].last_name)) {
-                        console.log('hithithtithith')
-                        // connection.query(
-                        //     "UPDATE employee SET ? WHERE ?",
-                        //     [
-                        //         {
-                        //            title:
-                        //         },
-                        //         {
-                        //             id: answer.id
-                        //         }
-                        //     ],
-                        // )
-                    }
-                }
-            })
-    })
+                    inquirer
+                        .prompt([
+                            {
+                                name: "newRole",
+                                type: "rawlist",
+                                message: "Which role would you like change to??",
+                                choices: function () {
+                                    var choiceArray = [];
+                                    results.forEach((entry) => {
+                                        let name = entry.title;
+                                        let value = entry.id
+                                        choiceArray.push({ name, value });
+                                    })
+                                    // console.log("choiceArray for newRole")
+                                    // console.log(choiceArray)
+                                    return choiceArray;
+                                }
+                            }
+                        ])
+
+                        .then(function (answer) {
+                            // console.log("answer #2");
+                            // console.log(answer);
+                           //NEED another connection.query to ask what role would you like to update. Use dynamic choices function to return all available roles. then Inside if statement that matches answer to an Employee value set role from there??? Then ...
+                            for (var i = 0; i < results.length; i++) {
+                                if (answer.newRole == (results[i].id)) {
+                                    // console.log('hithithtithith')
+                                    // console.log(answer.newRole)
+                                    // console.log(empAnswer.updateRole)
+                                    connection.query(
+                                        "UPDATE employee SET ? WHERE ?",
+                                        [
+                                            {
+                                               role_id: answer.newRole
+                                            },
+                                            {
+                                                id: empAnswer.updateRole
+                                            }
+                                        ],
+                                    )
+                                }
+                            }
+                            runSearch();
+                        })
+
+                });
+            });
+    });
 };
+
 
 function addEmployee() {
     connection.query("SELECT * FROM role", function (err, results) {
