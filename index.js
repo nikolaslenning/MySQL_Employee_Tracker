@@ -90,7 +90,7 @@ function addDept() {
             connection.query("INSERT INTO office set ?", { department: answer.department }, function (err) {
                 if (err) throw err;
                 console.log(
-                    "Department Created Successfully!"
+                    `${answer.department} Created Successfully!`
                 );
                 runSearch();
             });
@@ -128,13 +128,11 @@ function addRole() {
                         let value = entry.id;
                         deptArray.push({ name, value });
                     })
-                    console.log(deptArray);
                     return deptArray;
                 }
 
             }])
             .then(function (answer) {
-                console.log(answer.departmentID);
                 connection.query("SELECT * FROM role", function (error, response) {
                     if (error) {
                         console.log("error");
@@ -170,11 +168,85 @@ function addRole() {
             });
     });
 }
+
+function addEmployee() {
+    connection.query("SELECT * FROM role", function (err, results) {
+        if (err) throw err;
+        connection.query("SELECT * FROM employee", function (error, empResult) {
+            if (err) throw err;
+
+            inquirer
+                .prompt([
+                    {
+                        name: "firstName",
+                        type: "input",
+                        message: "What is the employee's first Name?"
+                    },
+                    {
+                        name: "lastName",
+                        type: "input",
+                        message: "What is the employee's last name?"
+
+                    },
+                    {
+                        name: "empRole",
+                        type: "rawlist",
+                        message: "What is the employee's role?",
+                        choices: function () {
+                            var choiceArray = [];
+                            results.forEach((entry) => {
+                                let name = entry.title;
+                                let value = entry.id;
+                                choiceArray.push({ name, value });
+                            })
+                            return choiceArray;
+                        }
+                    },
+                    {
+                        name: "managerID",
+                        type: "rawlist",
+                        message: "What is the employee's Manager?",
+                        choices: function () {
+                            var choiceArray = [];
+                            empResult.forEach((entry) => {
+                                let name = (entry.first_name + " " + entry.last_name);
+                                let value = entry.id;
+                                choiceArray.push({ name, value });
+                            })
+                            let name = 'None';
+                            let value = 0;
+                            choiceArray.push({ name, value });
+                            return choiceArray;
+                        }
+                    }
+                ])
+                .then(function (answer) {
+                    if (answer.managerID === 0) {
+                        answer.managerID = null;
+                    }
+                    connection.query("INSERT INTO employee set ?",
+                        {
+                            first_name: answer.firstName,
+                            last_name: answer.lastName,
+                            role_id: answer.empRole,
+                            manager_id: answer.managerID
+                        },
+                        function (err) {
+                            if (err) throw err;
+                            console.log(
+                                `${answer.firstName} ${answer.lastName} Created Successfully!`
+                            );
+                            runSearch();
+                        });
+                });
+        })
+    })
+}
+
+
 function updateRoles() {
     connection.query("SELECT first_name, last_name, employee.id, title FROM employee JOIN role ON employee.role_id = role.id", function (err, results) {
         if (err) throw err;
-        // console.log("results");
-        // console.table(results);        
         inquirer
             .prompt([
                 {
@@ -188,8 +260,7 @@ function updateRoles() {
                             let value = entry.id;
                             choiceArray.push({ name, value });
                         })
-                        // console.log("choiceArray for updateRole")
-                        // console.log(choiceArray)
+
                         return choiceArray;
                     }
                 }
@@ -197,11 +268,6 @@ function updateRoles() {
             .then(function (empAnswer) {
                 connection.query("SELECT * FROM role", function (err, results) {
                     if (err) throw err;
-                    // console.log("empAnswer")
-                    // console.log(empAnswer)
-                    // console.log(empAnswer.updateRole)
-                    // console.log("results")
-                    // console.log(results)
 
                     inquirer
                         .prompt([
@@ -216,27 +282,18 @@ function updateRoles() {
                                         let value = entry.id
                                         choiceArray.push({ name, value });
                                     })
-                                    // console.log("choiceArray for newRole")
-                                    // console.log(choiceArray)
                                     return choiceArray;
                                 }
                             }
                         ])
-
                         .then(function (answer) {
-                            // console.log("answer #2");
-                            // console.log(answer);
-                           //NEED another connection.query to ask what role would you like to update. Use dynamic choices function to return all available roles. then Inside if statement that matches answer to an Employee value set role from there??? Then ...
                             for (var i = 0; i < results.length; i++) {
                                 if (answer.newRole == (results[i].id)) {
-                                    // console.log('hithithtithith')
-                                    // console.log(answer.newRole)
-                                    // console.log(empAnswer.updateRole)
                                     connection.query(
                                         "UPDATE employee SET ? WHERE ?",
                                         [
                                             {
-                                               role_id: answer.newRole
+                                                role_id: answer.newRole
                                             },
                                             {
                                                 id: empAnswer.updateRole
@@ -252,63 +309,6 @@ function updateRoles() {
             });
     });
 };
-
-
-function addEmployee() {
-    connection.query("SELECT * FROM role", function (err, results) {
-        if (err) throw err;
-        inquirer
-            .prompt([
-                {
-                    name: "firstName",
-                    type: "input",
-                    message: "What is the employee's first Name?"
-                },
-                {
-                    name: "lastName",
-                    type: "input",
-                    message: "What is the employee's last name?"
-
-                },
-                {
-                    name: "empRole",
-                    type: "rawlist",
-                    message: "What is the employee's role?",
-                    choices: function () {
-                        var choiceArray = [];
-                        results.forEach((entry) => {
-                            let name = entry.title;
-                            let value = entry.id;
-                            console.log(name)
-                            choiceArray.push({ name, value });
-                        })
-
-                        console.log(choiceArray);
-                        return choiceArray;
-                    }
-                }
-            ])
-            .then(function (answer) {
-
-                console.log(answer)
-                console.log(answer.firstName);
-                console.log(answer.lastName);
-                connection.query("INSERT INTO employee set ?",
-                    {
-                        first_name: answer.firstName,
-                        last_name: answer.lastName,
-                        role_id: answer.empRole
-                    },
-                    function (err) {
-                        if (err) throw err;
-                        console.log(
-                            "Employee Created Successfully!"
-                        );
-                        runSearch();
-                    });
-            });
-    })
-}
 
 function viewDept() {
     connection.query("SELECT * FROM office", function (err, results) {
@@ -329,7 +329,7 @@ function viewRoles() {
 }
 
 function viewEmployee() {
-    connection.query("SELECT employee.id, first_name, last_name, title, department, salary FROM employee JOIN role ON employee.role_id = role.id JOIN office ON office.id = role.department_id ORDER BY employee.id", function (err, results) {
+    connection.query("SELECT e.id, e.first_name, e.last_name, title, department, salary, CONCAT(man.first_name, ' ', man.last_name)  as 'manager' FROM employee e LEFT JOIN role ON e.role_id = role.id LEFT JOIN office ON office.id = role.department_id LEFT JOIN employee man ON man.id = e.manager_id ORDER BY e.id", function (err, results) {
         if (err) throw err;
 
         console.table(results);
